@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AutoEstimate{% endblock %} — AutoEstimate</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=8">
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="{{ url_for('main.index') }}">
+        <svg class="brand-mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M3 6l0 0" stroke="currentColor" stroke-width="0"/>
+          <path fill="currentColor" d="M20.5 5.5a2.2 2.2 0 0 1 .3 3.1l-9.2 11.3a2.6 2.6 0 0 1-3.8.2L3.5 16.3a2.6 2.6 0 0 1 .2-3.8L15 3.3a2.2 2.2 0 0 1 3.1.3l.6.7Z" opacity=".9"/>
+          <circle cx="9" cy="15" r="1.6" fill="#fff"/>
+        </svg>
+        Auto<span>Estimate</span>
+      </a>
+      <div class="nav-links">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('estimates.dashboard') }}" class="{{ 'nav-active' if request.endpoint == 'estimates.dashboard' else '' }}">Dashboard</a>
+          <a href="{{ url_for('estimates.new') }}" class="btn btn-primary btn-sm">+ New estimate</a>
+          {% if not current_user.is_pro %}
+            <a href="{{ url_for('billing.upgrade') }}" class="btn btn-ghost btn-sm">Upgrade</a>
+          {% else %}
+            <span class="badge pro">Pro</span>
+          {% endif %}
+{% if admin_enabled %}
+            <a href="{{ url_for('admin.panel') }}">Admin</a>
+          {% endif %}
+          <a href="{{ url_for('settings.page') }}" class="{{ 'nav-active' if request.endpoint == 'settings.page' else '' }}">Settings</a>
+          <a href="{{ url_for('auth.logout') }}">Sign out</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="{{ 'nav-active' if request.endpoint == 'auth.login' else '' }}">Sign in</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-sm">{{ 'Sign up free' if request.endpoint != 'auth.signup' else 'Sign up free' }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main class="container main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 AutoEstimate.</span>
+      <span class="footer-links">
+        <a href="{{ url_for('main.index') }}#how">How it works</a>
+        <a href="{{ url_for('main.index') }}#sample">Sample estimate</a>
+        <a href="{{ url_for('main.index') }}#pricing">Pricing</a>
+      </span>
+    </div>
+  </footer>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=8"></script>
+</body>
+</html>
+
+

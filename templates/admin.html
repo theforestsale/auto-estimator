@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Admin</h1>
+    <p class="muted">Manually activate or downgrade subscribers by email.</p>
+  </div>
+</div>
+
+{% if not authed %}
+<div class="estimate-sheet" style="max-width: 420px;">
+  <form method="post" action="{{ url_for('admin.login') }}" class="form">
+    {{ csrf_field() }}
+    <label>Admin key
+      <input type="password" name="admin_key" required autocomplete="off">
+    </label>
+    <button type="submit" class="btn btn-primary">Unlock</button>
+  </form>
+</div>
+{% else %}
+<div class="estimate-sheet" style="max-width: 420px;">
+  <form method="post" action="{{ url_for('admin.activate') }}" class="form">
+    {{ csrf_field() }}
+    <label>Customer email
+      <input type="email" name="email" required placeholder="customer@example.com">
+    </label>
+    <label>Set plan
+      <select name="plan" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+        <option value="pro">Pro (unlimited)</option>
+        <option value="free">Free (3 estimates)</option>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary">Apply</button>
+  </form>
+  <form method="post" action="{{ url_for('admin.logout') }}" style="margin-top:16px;">
+    {{ csrf_field() }}
+    <button type="submit" class="btn btn-ghost btn-sm">Lock admin</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

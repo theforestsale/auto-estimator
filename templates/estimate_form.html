@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}New estimate{% endblock %}
+{% block content %}
+<div class="newest-head">
+  <div class="newest-head-copy">
+    <h1>New estimate</h1>
+    <p class="muted">Pick a symptom, add the vehicle, let the AI draft the itemized estimate.</p>
+    <div class="stepper">
+      <span class="step-chip on">1 · Vehicle &amp; issue</span>
+      <span class="step-arrow">→</span>
+      <span class="step-chip">2 · AI review</span>
+      <span class="step-arrow">→</span>
+      <span class="step-chip">3 · Send PDF</span>
+    </div>
+  </div>
+  <img class="newest-art" src="{{ url_for('static', filename='img/estimate_art.svg') }}?v=6" alt="Estimate illustration">
+</div>
+
+<div class="estimate-form-layout">
+  <form method="post" action="{{ url_for('estimates.create') }}" class="form estimate-form">
+    {{ csrf_field() }}
+
+    <div class="form-card">
+      <h3 class="form-card-title">🔧 What's the complaint?</h3>
+      <p class="form-card-hint">Tap a symptom to auto-fill a realistic description, then adjust.</p>
+      <div class="symptom-grid" id="symptom-grid">
+        <button type="button" class="symptom" data-symptom="brakes"><span class="symptom-icon">🔩</span>Brakes</button>
+        <button type="button" class="symptom" data-symptom="engine"><span class="symptom-icon">⚙️</span>Engine</button>
+        <button type="button" class="symptom" data-symptom="ac"><span class="symptom-icon">❄️</span>A/C</button>
+        <button type="button" class="symptom" data-symptom="electrical"><span class="symptom-icon">🔋</span>Electrical</button>
+        <button type="button" class="symptom" data-symptom="suspension"><span class="symptom-icon">🛞</span>Suspension</button>
+        <button type="button" class="symptom" data-symptom="no-start"><span class="symptom-icon">🚫</span>Won't start</button>
+        <button type="button" class="symptom" data-symptom="tires"><span class="symptom-icon">🏁</span>Tires</button>
+        <button type="button" class="symptom" data-symptom="body"><span class="symptom-icon">🎨</span>Body</button>
+      </div>
+      <div class="form-row">
+        <label>Customer complaint / issue description
+          <textarea id="issue_desc" name="issue_desc" rows="5" required maxlength="2000"
+            placeholder="Customer reports a squealing noise when braking, mostly in the mornings…"></textarea>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-card-title">🚗 The vehicle</h3>
+      <div class="form-row grid-4">
+        <label>Make
+          <input id="make" type="text" name="make" list="makes" required maxlength="100" placeholder="Toyota" autocomplete="off">
+          <datalist id="makes"></datalist>
+        </label>
+        <label>Model
+          <input id="model" type="text" name="model" list="models" required maxlength="100" placeholder="Camry" autocomplete="off">
+          <datalist id="models"></datalist>
+        </label>
+        <label>Year
+          <input id="year" type="text" name="year" maxlength="20" placeholder="2016">
+        </label>
+        <label>Mileage
+          <input id="mileage" type="text" name="mileage" maxlength="40" placeholder="82,000">
+        </label>
+      </div>
+      <div class="form-row">
+        <label>Customer name
+          <input id="customer_name" type="text" name="customer_name" required maxlength="200" placeholder="John Smith" autocomplete="name">
+        </label>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-card-title">💰 Your rates</h3>
+      <div class="form-row grid-2">
+        <label>Shop labor rate ($/hr)
+          <input id="labor_rate" type="number" step="0.01" min="0" name="labor_rate" value="{{ labor_rate }}">
+        </label>
+        <label>Tax rate (%)
+          <input id="tax_rate" type="number" step="0.01" min="0" name="tax_rate" value="{{ tax_rate }}">
+        </label>
+      </div>
+      <div class="rate-presets">
+        <span class="chips-label">Quick set:</span>
+        <button type="button" class="rate-chip" data-rate="85" data-tax="0">$85 · 0%</button>
+        <button type="button" class="rate-chip" data-rate="95" data-tax="5">$95 · 5%</button>
+        <button type="button" class="rate-chip active" data-rate="95" data-tax="8">$95 · 8%</button>
+        <button type="button" class="rate-chip" data-rate="110" data-tax="10">$110 · 10%</button>
+        <button type="button" class="rate-chip" data-rate="125" data-tax="13">$125 · 13%</button>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-lg" id="generate-btn">
+        Generate estimate
+      </button>
+      <button type="button" class="btn btn-ghost btn-lg" id="fill-example">Fill with full example</button>
+    </div>
+  </form>
+
+  <aside class="form-side">
+    <div class="live-card">
+      <div class="live-card-head">
+        <span class="live-dot"></span> Live preview
+      </div>
+      <div class="live-doc">
+        <div class="live-doc-head">
+          <span class="live-shop">YOUR SHOP</span>
+          <span class="live-est">EST. #DRAFT</span>
+        </div>
+        <div class="live-customer" id="pv-name">Customer name</div>
+        <div class="live-vehicle" id="pv-vehicle">Make · Model</div>
+        <div class="live-issue" id="pv-issue">The customer's complaint will appear here…</div>
+        <div class="live-divider"></div>
+        <div class="live-pip" id="pv-pip1">Diagnosis</div>
+        <div class="live-pip" id="pv-pip2">Itemized labor &amp; parts</div>
+        <div class="live-pip" id="pv-pip3">Tax &amp; total</div>
+        <div class="live-doc-total"><span>Total</span><span id="pv-total">$ —</span></div>
+      </div>
+      <div class="live-note" id="pv-hints">
+        <strong>AI will look at:</strong>
+        <span>Brake pads &amp; rotors</span>
+        <span>Brake fluid &amp; lines</span>
+        <span>Caliper condition</span>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" role="img" aria-label="Illustration of an estimate being drafted">
+  <defs>
+    <linearGradient id="clip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0f6fa"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" rx="22" fill="#eaf2f7"/>
+  <circle cx="255" cy="30" r="70" fill="#dcebf5" opacity=".7"/>
+  <g transform="rotate(-8 150 105)">
+    <rect x="104" y="40" width="120" height="150" rx="12" fill="url(#clip)" stroke="#c9d9e4" stroke-width="2"/>
+    <rect x="120" y="56" width="52" height="52" rx="8" fill="url(#clip)" stroke="#195070" stroke-width="3"/>
+    <path d="M133 86l8 8 16-18" stroke="#3ecf8e" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="128" y="126" width="72" height="7" rx="3.5" fill="#b9d6e8"/>
+    <rect x="128" y="144" width="54" height="7" rx="3.5" fill="#e2ecf3"/>
+    <rect x="128" y="162" width="62" height="7" rx="3.5" fill="#e2ecf3"/>
+    <rect x="128" y="180" width="40" height="7" rx="3.5" fill="#3ecf8e"/>
+  </g>
+  <g fill="#195070">
+    <rect x="196" y="96" width="34" height="14" rx="4" transform="rotate(-45 213 103)"/>
+    <rect x="202" y="92" width="8" height="22" rx="3" fill="#123a52" transform="rotate(-45 206 103)"/>
+  </g>
+  <rect x="214" y="122" width="40" height="12" rx="3" fill="#3ecf8e" transform="rotate(-45 234 128)"/>
+  <g stroke="#195070" stroke-width="4" stroke-linecap="round" fill="none" opacity=".35">
+    <path d="M28 48h34 M28 68h22 M28 88h28"/>
+  </g>
+</svg>

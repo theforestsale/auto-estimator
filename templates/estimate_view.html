@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Estimate #{{ estimate.id }}{% endblock %}
+{% block content %}
+{% set ai = estimate.ai_json %}
+{% set data = ai|from_json %}
+{% set totals = data|totals(estimate.labor_rate, estimate.tax_rate) %}
+
+<div class="estimate-head">
+  <div class="estimate-head-main">
+    <span class="badge {{ 'sent' if estimate.status == 'sent' else 'draft' }}">{{ estimate.status }}</span>
+    <h1>Estimate #{{ estimate.id }}</h1>
+    <p class="muted">
+      {{ estimate.customer_name }} · {{ estimate.year }} {{ estimate.make }} {{ estimate.model }}{% if estimate.mileage %} · {{ estimate.mileage }} mi{% endif %}
+      · created {{ estimate.created_at.strftime('%b %d, %Y') }}
+    </p>
+  </div>
+  <div class="row-actions no-print">
+    {% if estimate.status == 'draft' %}
+      <form method="post" action="{{ url_for('estimates.set_status', estimate_id=estimate.id) }}">
+        {{ csrf_field() }}
+        <input type="hidden" name="status" value="sent">
+        <button class="btn btn-primary">Mark as sent</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('estimates.set_status', estimate_id=estimate.id) }}">
+        {{ csrf_field() }}
+        <input type="hidden" name="status" value="draft">
+        <button class="btn btn-ghost">Revert to draft</button>
+      </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('estimates.duplicate', estimate_id=estimate.id) }}">
+      {{ csrf_field() }}
+      <button class="btn btn-ghost">Duplicate</button>
+    </form>
+    <button type="button" class="btn btn-ghost" id="print-btn">Print</button>
+    <a class="btn btn-ghost" href="{{ url_for('estimates.pdf', estimate_id=estimate.id) }}">Download PDF</a>
+    <a class="btn btn-ghost" href="{{ url_for('estimates.dashboard') }}">Back</a>
+  </div>
+</div>
+
+<div class="estimate-layout">
+  <div class="estimate-main">
+    <div class="summary-strip">
+      <div class="summary-item main"><span class="summary-label">Total</span><span class="summary-value">{{ totals.total|money }}</span></div>
+      <div class="summary-item"><span class="summary-label">Labor ({{ totals.labor_hours }}h)</span><span>{{ totals.labor|money }}</span></div>
+      <div class="summary-item"><span class="summary-label">Parts</span><span>{{ totals.parts|money }}</span></div>
+      <div class="summary-item"><span class="summary-label">Tax</span><span>{{ totals.tax|money }}</span></div>
+    </div>
+
+    {% if data.diagnosis %}
+    <div class="sheet-section">
+      <h3>🔍 Diagnosis</h3>
+      <p>{{ data.diagnosis }}</p>
+    </div>
+    {% endif %}
+
+    <div class="sheet-section">
+      <h3>🛠 Recommended work</h3>
+      <table class="table">
+        <thead>
+          <tr><th>Item</th><th>Type</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          {% for item in data.recommended_work %}
+          <tr>
+            <td>{{ item.item }}</td>
+            <td><span class="tag-pill">{{ item.category.title() }}</span></td>
+            <td>{{ item.quantity }} {{ item.unit_label }}</td>
+            <td>{{ item.unit_price|money }}</td>
+            <td>{{ (item.quantity * item.unit_price)|money }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if data.parts %}
+    <div class="sheet-section">
+      <h3>📦 Parts (estimated)</h3>
+      <table class="table">
+        <thead><tr><th>Part</th><th>Est. price</th></tr></thead>
+        <tbody>
+          {% for part in data.parts %}
+          <tr><td>{{ part.name }}</td><td>{{ part.est_price|money }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if data.notes %}
+    <div class="sheet-section">
+      <h3>📝 Notes</h3>
+      <ul>
+        {% for note in data.notes %}
+        <li>{{ note }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="estimate-side">
+    <div class="side-card">
+      <h3>Totals</h3>
+      <div class="totals totals-side">
+        <div class="totals-row"><span>Labor</span><span>{{ totals.labor|money }}</span></div>
+        <div class="totals-row"><span>Parts</span><span>{{ totals.parts|money }}</span></div>
+        <div class="totals-row"><span>Misc.</span><span>{{ totals.misc|money }}</span></div>
+        <div class="totals-row"><span>Subtotal</span><span>{{ totals.subtotal|money }}</span></div>
+        <div class="totals-row"><span>Tax ({{ estimate.tax_rate }}%)</span><span>{{ totals.tax|money }}</span></div>
+        <div class="totals-row total"><span>Total</span><span>{{ totals.total|money }}</span></div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <h3>Settings used</h3>
+      <div class="meta-grid">
+        <div><span class="meta-k">Labor rate</span><span class="meta-v">{{ estimate.labor_rate|money }}/hr</span></div>
+        <div><span class="meta-k">Tax rate</span><span class="meta-v">{{ estimate.tax_rate }}%</span></div>
+      </div>
+    </div>
+
+    {% if data.customer_message %}
+    <div class="side-card msg-card">
+      <div class="msg-head">
+        <h3>Message to send</h3>
+        <button type="button" class="btn btn-sm btn-ghost" id="copy-message">Copy</button>
+      </div>
+      <blockquote id="customer-msg">{{ data.customer_message }}</blockquote>
+      <a class="btn btn-primary btn-block no-print" href="{{ url_for('estimates.pdf', estimate_id=estimate.id) }}">Download PDF</a>
+    </div>
+    {% endif %}
+
+    <div class="side-card share-card no-print">
+      <h3>Share with customer</h3>
+      {% if share_token %}
+        {% set share_url = request.host_url.rstrip('/') ~ url_for('estimates.share_view', token=share_token.token) %}
+        <p class="muted">Anyone with this link can view the estimate — no login needed.</p>
+        <input class="share-url" id="share-url" value="{{ share_url }}" readonly>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary btn-sm" id="copy-share">Copy link</button>
+          <form method="post" action="{{ url_for('estimates.revoke_share', estimate_id=estimate.id) }}">
+            {{ csrf_field() }}
+            <button class="btn btn-ghost btn-sm">Revoke</button>
+          </form>
+        </div>
+      {% else %}
+        <p class="muted">Send a view-only link so the customer can see the estimate on their phone.</p>
+        <form method="post" action="{{ url_for('estimates.create_share', estimate_id=estimate.id) }}">
+          {{ csrf_field() }}
+          <button class="btn btn-primary btn-block">Create share link</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<span id="print-banner" class="print-only">AutoEstimate — Estimate #{{ estimate.id }}</span>
+{% endblock %}

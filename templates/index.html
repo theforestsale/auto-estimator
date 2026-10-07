@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Professional auto repair estimates in seconds{% endblock %}
+{% block content %}
+<section class="hero split">
+  <div class="hero-copy">
+    <h1>Professional auto repair estimates in <span>30 seconds</span>.</h1>
+    <p class="subtitle">
+      Type what the customer says. AutoEstimate turns it into a clear, itemized
+      estimate — diagnosis, labor, parts, tax, total — plus a ready-to-send PDF.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('auth.signup') }}">Try 3 free estimates</a>
+      <a class="btn btn-ghost btn-lg" href="#sample">See a sample estimate</a>
+    </div>
+    <div class="hero-proof">
+      <span>&#10003; Ready-to-send PDF</span>
+      <span>&#10003; No credit card</span>
+      <span>&#10003; No per-estimate cost</span>
+    </div>
+  </div>
+
+  <div class="hero-art">
+    <img class="hero-car" src="{{ url_for('static', filename='img/car.svg') }}?v=2" alt="Illustration of a car in the shop">
+    <div class="doc-card">
+      <div class="doc-head">
+        <span class="doc-shop">YOUR SHOP</span>
+        <span class="doc-est">ESTIMATE #12</span>
+      </div>
+      <div class="doc-customer">Honda Civic 2018</div>
+      <div class="doc-line"><span>Front brake pad replacement</span><span class="tag-txt">labor</span><span>$130.00</span></div>
+      <div class="doc-line"><span>Brake pads (front set)</span><span class="tag-txt">parts</span><span>$96.00</span></div>
+      <div class="doc-line"><span>Brake fluid flush</span><span class="tag-txt">misc</span><span>$42.00</span></div>
+      <div class="doc-line"><span>Shop supplies</span><span class="tag-txt">misc</span><span>$12.00</span></div>
+      <div class="doc-total"><span>Total</span><span>$312.64</span></div>
+      <div class="doc-foot">Estimated cost &#183; valid 30 days</div>
+    </div>
+  </div>
+</section>
+
+<section class="steps-card" id="how">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step"><span class="step-num">1</span><div><strong>Paste what you know</strong><br>Vehicle + the customer's own words.</div></div>
+    <div class="step"><span class="step-num">2</span><div><strong>AI drafts the estimate</strong><br>Diagnosis, itemized labor &amp; parts, notes.</div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Send the PDF</strong><br>Faster than competitors can answer the phone.</div></div>
+  </div>
+</section>
+
+<section class="sample" id="sample">
+  <div class="page-head">
+    <div>
+      <h2>What the AI actually produces</h2>
+      <p class="muted">Real output style, generated from one sentence: <em>“car hesitates when accelerating, check engine light on”</em>.</p>
+    </div>
+  </div>
+  <div class="estimate-sheet-wrap">
+  {% include "_sample_sheet.html" %}
+  </div>
+</section>
+
+<section class="cards">
+  <div class="card">
+    <div class="card-icon">&#9201;</div>
+    <h3>Fast quote, won job</h3>
+    <p>Customers pick the shop that answers fastest with a clear price. Send a professional estimate while competitors are still on the phone.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">&#10003;</div>
+    <h3>Honest by design</h3>
+    <p>The AI only includes work the complaint implies — no inflated line items that scare customers away or burn trust.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">&#128188;</div>
+    <h3>Code reads as credibility</h3>
+    <p>Clean, branded PDFs make small shops look large. Your name and rates, every single estimate.</p>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="price-card price-free">
+    <h3>Free</h3>
+    <div class="price">$0<span>/mo</span></div>
+    <ul>
+      <li>3 estimates to try</li>
+      <li>PDF download</li>
+      <li>Estimate history</li>
+    </ul>
+    <a class="btn btn-ghost" href="{{ url_for('auth.signup') }}">Start free</a>
+  </div>
+  <div class="price-card price-pro">
+    <h3>Pro</h3>
+    <div class="price">$19<span>/mo</span></div>
+    <ul>
+      <li>Unlimited estimates</li>
+      <li>PDF download</li>
+      <li>Share links to send to customers</li>
+      <li>Your shop branding</li>
+      <li>Cancel anytime</li>
+    </ul>
+    <a class="btn btn-primary" href="{{ url_for('auth.signup') }}">Go Pro</a>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <h2>Questions, answered</h2>
+  <div class="faq-grid">
+    <details>
+      <summary>Who actually writes the estimate?</summary>
+      <p>You describe the customer's complaint, the AI drafts a diagnosis, priced work list, and a message to the customer. You review it before sending — nothing leaves your account automatically.</p>
+    </details>
+    <details>
+      <summary>Is the estimate accurate?</summary>
+      <p>The AI only prices items the complaint implies, using your labor and tax rates. Treat it as a fast starting point — final pricing depends on inspection, exactly like a quote written on paper.</p>
+    </details>
+    <details>
+      <summary>How do I get it to the customer?</summary>
+      <p>Download a branded PDF, copy a ready-to-text message, or create a share link they can open on their phone without logging in.</p>
+    </details>
+    <details>
+      <summary>Can I cancel Pro anytime?</summary>
+      <p>Yes — cancel anytime and you keep any quotes you've already created. No contracts, no data lock-in.</p>
+    </details>
+  </div>
+</section>
+{% endblock %}

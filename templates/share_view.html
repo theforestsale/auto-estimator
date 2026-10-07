@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Estimate for {{ estimate.customer_name }}{% endblock %}
+{% block content %}
+{% set ai = estimate.ai_json %}
+{% set data = ai|from_json %}
+{% set totals = data|totals(estimate.labor_rate, estimate.tax_rate) %}
+
+<div class="public-doc">
+  <div class="pub-head">
+    <div>
+      <h1>{{ estimate.year }} {{ estimate.make }} {{ estimate.model }}</h1>
+      <p class="muted">
+        Prepared for <strong>{{ estimate.customer_name }}</strong>{% if estimate.mileage %} · {{ estimate.mileage }} mi{% endif %}
+        · {{ estimate.created_at.strftime('%b %d, %Y') }}
+      </p>
+    </div>
+    <div class="pub-total">
+      <span class="summary-label">Estimated total</span>
+      <span class="pub-price">{{ totals.total|money }}</span>
+      <span class="muted">incl. tax</span>
+    </div>
+  </div>
+
+  {% if data.diagnosis %}
+  <section class="sheet-section">
+    <h3>Diagnosis</h3>
+    <p>{{ data.diagnosis }}</p>
+  </section>
+  {% endif %}
+
+  <section class="sheet-section">
+    <h3>Recommended work</h3>
+    <table class="table">
+      <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>
+        {% for item in data.recommended_work %}
+        <tr>
+          <td>{{ item.item }}</td>
+          <td>{{ item.quantity }} {{ item.unit_label }}</td>
+          <td>{{ item.unit_price|money }}</td>
+          <td>{{ (item.quantity * item.unit_price)|money }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if data.parts %}
+  <section class="sheet-section">
+    <h3>Parts (estimated)</h3>
+    <table class="table">
+      <thead><tr><th>Part</th><th>Est. price</th></tr></thead>
+      <tbody>
+        {% for part in data.parts %}
+        <tr><td>{{ part.name }}</td><td>{{ part.est_price|money }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  <section class="sheet-section totals-box">
+    <div class="totals-row"><span>Labor</span><span>{{ totals.labor|money }}</span></div>
+    <div class="totals-row"><span>Parts</span><span>{{ totals.parts|money }}</span></div>
+    <div class="totals-row"><span>Misc.</span><span>{{ totals.misc|money }}</span></div>
+    <div class="totals-row"><span>Subtotal</span><span>{{ totals.subtotal|money }}</span></div>
+    <div class="totals-row"><span>Tax ({{ estimate.tax_rate }}%)</span><span>{{ totals.tax|money }}</span></div>
+    <div class="totals-row total"><span>Estimated total</span><span>{{ totals.total|money }}</span></div>
+  </section>
+
+  {% if data.customer_message %}
+  <section class="sheet-section note-box">
+    <h3>Note from the shop</h3>
+    <p>{{ data.customer_message }}</p>
+  </section>
+  {% endif %}
+
+  <footer class="pub-foot">
+    <strong>{{ shop.name }}</strong>
+    {% if shop.phone %} · {{ shop.phone }}{% endif %}
+    {% if shop.address %} · {{ shop.address }}{% endif %}
+  </footer>
+</div>
+{% endblock %}

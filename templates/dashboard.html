@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hi, {{ current_user.email.split('@')[0] }} <span class="wave">👋</span></h1>
+    <p class="muted">{{ current_user.email }} · here's what's happening in your shop.</p>
+  </div>
+  <div class="row-actions">
+    <a class="btn btn-ghost" href="{{ url_for('estimates.export_csv') }}">⬇ Export CSV</a>
+    <a class="btn btn-primary" href="{{ url_for('estimates.new') }}">+ New estimate</a>
+  </div>
+</div>
+
+{% set total = estimates|length %}
+{% set sent = estimates|selectattr('status', 'equalto', 'sent')|list|length %}
+{% set drafts = total - sent %}
+
+<section class="stats-grid">
+  <div class="stat-card sc-blue">
+    <div class="stat-top"><div class="stat-ico">📊</div><div class="stat-value">{{ total }}</div></div>
+    <div class="stat-label">Total estimates</div>
+    <div class="stat-hint">all time</div>
+  </div>
+  <div class="stat-card sc-green">
+    <div class="stat-top"><div class="stat-ico">✅</div><div class="stat-value">{{ sent }}</div></div>
+    <div class="stat-label">Sent to customer</div>
+    <div class="stat-hint">{{ ((sent / total * 100) | round | int) if total else 0 }}% of your quotes</div>
+  </div>
+  <div class="stat-card sc-violet">
+    <div class="stat-top"><div class="stat-ico">⚡</div><div class="stat-value">{{ today_count }}</div></div>
+    <div class="stat-label">Created today</div>
+    <div class="stat-hint">{{ week_count }} in the last 7 days</div>
+  </div>
+  <div class="stat-card sc-gold">
+    <div class="stat-top"><div class="stat-ico">💰</div><div class="stat-value">{{ "%.0f"|format(value_quoted) }}</div></div>
+    <div class="stat-label">Value quoted</div>
+    <div class="stat-hint">across all estimates</div>
+  </div>
+</section>
+
+{% if current_user.is_pro %}
+<div class="quota-banner pro">
+  <span>✨ Pro plan — unlimited estimates, unlimited PDFs.</span>
+  <span class="badge pro">Active</span>
+</div>
+{% else %}
+<div class="quota-banner">
+  <span class="quota-msg">Free plan: <strong>{{ used }}/{{ quota }}</strong> estimates used.</span>
+  <div class="prog-track"><div class="prog-fill {{ 'prog-warn' if used >= quota else '' }}" style="width: {{ (used / quota * 100) | round | int if quota else 0 }}%"></div></div>
+  <a class="btn btn-sm btn-ghost" href="{{ url_for('billing.upgrade') }}">Go unlimited →</a>
+</div>
+{% endif %}
+
+<div class="dash-layout">
+  <div class="dash-main">
+    {% if estimates %}
+    <div class="dash-toolbar">
+      <input type="search" id="dash-search" class="dash-search" placeholder="Search customer or vehicle…">
+      <div class="filter-chips" id="dash-filters">
+        <button type="button" class="filter-chip active" data-filter="all">All</button>
+        <button type="button" class="filter-chip" data-filter="draft">Draft</button>
+        <button type="button" class="filter-chip" data-filter="sent">Sent</button>
+      </div>
+    </div>
+    <div class="dashboard-lists">
+      <table class="table dash-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer &amp; vehicle</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for est in estimates %}
+          {% set ai = est.ai_json|from_json %}
+          {% set totals = ai|totals(est.labor_rate, est.tax_rate) %}
+          <tr data-status="{{ est.status }}">
+            <td>{{ est.id }}</td>
+            <td>
+              <a class="cell-main" href="{{ url_for('estimates.view', estimate_id=est.id) }}">{{ est.customer_name }}</a>
+              <div class="cell-sub">{{ est.year }} {{ est.make }} {{ est.model }}{% if est.mileage %} · {{ est.mileage }} mi{% endif %}</div>
+            </td>
+            <td><span class="badge {{ 'sent' if est.status == 'sent' else 'draft' }}">{{ est.status }}</span></td>
+            <td class="cell-total">{{ totals.total|money }}</td>
+            <td class="cell-sub">{{ est.created_at.strftime('%b %d') }}</td>
+            <td class="row-actions">
+              <a class="link-ish" href="{{ url_for('estimates.view', estimate_id=est.id) }}">View</a>
+              <a class="link-ish" href="{{ url_for('estimates.pdf', estimate_id=est.id) }}">PDF</a>
+              <form method="post" action="{{ url_for('estimates.duplicate', estimate_id=est.id) }}" class="inline-form">
+                {{ csrf_field() }}
+                <button type="submit" class="link-ish">Copy</button>
+              </form>
+              {% if est.status == 'draft' %}
+              <form method="post" action="{{ url_for('estimates.set_status', estimate_id=est.id) }}" class="inline-form">
+                {{ csrf_field() }}
+                <input type="hidden" name="status" value="sent">
+                <button type="submit" class="link-send">Send</button>
+              </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('estimates.delete', estimate_id=est.id) }}"
+                    data-confirm="Delete estimate #{{ est.id }}?" class="inline-form">
+                {{ csrf_field() }}
+                <button type="submit" class="link-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="dash-empty hidden" id="dash-empty">No estimates match your search.</p>
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">🔧</div>
+      <h3>No estimates yet</h3>
+      <p>Turn your first customer complaint into a professional, itemized estimate in under a minute.</p>
+      <div class="empty-actions">
+        <a class="btn btn-primary" href="{{ url_for('estimates.new') }}">Create your first estimate</a>
+        <button type="button" class="btn btn-ghost" id="show-sample">Preview a sample estimate</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="dash-side">
+    {% if not current_user.is_pro %}
+    <div class="side-card upsell-card">
+      <h3>⭐ Go Pro</h3>
+      <p>Unlimited estimates + your shop branding on every PDF.</p>
+      <div class="prog-track"><div class="prog-fill {{ 'prog-warn' if used >= quota else '' }}" style="width: {{ (used / quota * 100) | round | int if quota else 0 }}%"></div></div>
+      <p class="upsell-note"><strong>{{ quota - used }}</strong> free {{ 'estimate' if (quota - used) == 1 else 'estimates' }} left</p>
+      <a class="btn btn-primary btn-block" href="{{ url_for('billing.upgrade') }}">Upgrade — $19/month</a>
+    </div>
+    {% else %}
+    <div class="side-card plan-card">
+      <h3>⭐ Pro plan</h3>
+      <p>Unlimited estimates are active on your account.</p>
+      <span class="badge pro">Active</span>
+    </div>
+    {% endif %}
+
+    <div class="side-card">
+      <h3>🚗 Your recent vehicles</h3>
+      {% if recent_makes %}
+        {% for make, count in recent_makes %}
+        <a class="veh-chip" href="{{ url_for('estimates.new') }}">{{ make }} <span class="veh-count">×{{ count }}</span></a>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No vehicles yet — create your first estimate.</p>
+      {% endif %}
+    </div>
+
+    <div class="side-card">
+      <h3>💡 Pro tips</h3>
+      <ul class="tip-list">
+        <li>Write the customer's <em>own words</em> for the best-first draft.</li>
+        <li>Include year, make &amp; mileage when you know them.</li>
+        <li>Mark as <strong>sent</strong> after the customer agrees.</li>
+        <li>Export CSV to keep your own books.</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="sample-modal" hidden>
+  <div class="modal-overlay" data-close-modal></div>
+  <div class="modal-box modal-lg">
+    <div class="modal-head">
+      <h2>What you'll get</h2>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      {% include "_sample_sheet.html" %}
+      <p class="muted" style="margin-top:16px">This is a static example. Your estimates are generated from your exact customer complaint, with your shop's labor and tax rates.</p>
+    </div>
+    <div class="modal-foot">
+      <a class="btn btn-primary" href="{{ url_for('estimates.new') }}">Now create your first one</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

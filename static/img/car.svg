@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Illustration of a car being serviced">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eaf2f7"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="carBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b6b94"/>
+      <stop offset="100%" stop-color="#195070"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" rx="24" fill="url(#bg)"/>
+  <g stroke="#195070" stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M60 330 Q60 350 80 350 L120 350 Q112 226 200 200 L470 200 Q520 226 520 322 L560 322 Q580 322 580 302 V344 Q580 354 570 354 L540 354" opacity=".18"/>
+  </g>
+  <path d="M120 260 Q150 210 210 210 L420 210 Q460 210 474 258 L486 296 Q492 308 486 316 Q482 322 470 322 L154 322 Q140 322 136 312 L120 260 Z" fill="url(#carBody)"/>
+  <path d="M470 258 L428 258 L446 220 Q460 218 468 240 Z" fill="#2b6b94"/>
+  <rect x="96" y="300" width="22" height="16" rx="4" fill="#f2b93b"/>
+  <rect x="506" y="300" width="22" height="16" rx="4" fill="#f2b93b"/>
+  <circle cx="150" cy="322" r="34" fill="#123a52"/>
+  <circle cx="150" cy="322" r="16" fill="#eaf2f7"/>
+  <circle cx="460" cy="322" r="34" fill="#123a52"/>
+  <circle cx="460" cy="322" r="16" fill="#eaf2f7"/>
+  <path d="M210 210 Q215 186 244 182" stroke="#eaf2f7" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M300 210 L300 196" stroke="#eaf2f7" stroke-width="7" stroke-linecap="round"/>
+  <path d="M104 160 l14 0 m-14 24 l14 0 m-14 24 l14 0" stroke="#137e9e" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <g fill="#195070">
+    <rect x="52" y="120" width="34" height="14" rx="4" transform="rotate(-55 69 127)"/>
+    <rect x="56" y="120" width="6" height="26" rx="3" fill="#123a52"/>
+  </g>
+  <g stroke="#123a52" stroke-width="4" fill="none" opacity=".85">
+    <circle cx="176" cy="132" r="10"/>
+    <circle cx="176" cy="132" r="4" fill="#123a52"/>
+  </g>
+  <text x="120" y="382" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#667085">Every repair shop deserves fast, honest estimates.</text>
+</svg>
